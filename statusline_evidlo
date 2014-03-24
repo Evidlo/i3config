@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # shell script: periodically polls system for stats
 interface="wlp3s0"
 
@@ -17,7 +17,7 @@ do
 	let "lastrun+=1"
 	if [ "$lastrun" -ge 30 ]
 	then
-			lastrun=0
+	lastrun=0
 			
 		###TOTAL BANDWIDTH TRANSFER
 		stats_page=$(curl -s https://my.resnet.purdue.edu/mystats)
