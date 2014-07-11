@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Evan Widloski - 2013 
-#i3wm status line output example written in bash
+#A simplified statusline script for i3 demonstrating how to use the protocol
  
 echo '{ "version": 1 }'
 echo '['
@@ -9,19 +9,19 @@ echo '[]'
  
 while :
 do
-	datesec=$(date +%s)
-    ###Send out to status bar
-    #Put a comma at the end of each string EXCEPT the last one
+	current_time=$(date +%H:%M)
+	field2="Field2"
+	field3="Field3"
+
+	#Send out to status bar
 	echo -n ",["
+	#Add as many custom fields as you want
+	echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$current_time\"}," 
+	echo -n "{\"name\":\"field1\",\"color\":\"#ffff00\",\"full_text\":\"$field2\"}," 
+	echo -n "{\"name\":\"field2\",\"color\":\"#ff9200\",\"full_text\":\"$field3\"}" 
 
-	#Make as many of these lines as you want
-    echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$datesec\"}," 
-    echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$datesec\"}," 
-    echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$datesec\"}" 
+	#(note: the last echo statement does not have a trailing comma)
 
-
-    echo -n "]"
- 
+echo -n "]"
     sleep 1
- 
 done
