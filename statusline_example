@@ -9,12 +9,12 @@ echo '[]'
  
 while :
 do
-	datesec=$(date +%s)
+    datesec=$(date +%s)
     ###Send out to status bar
     #Put a comma at the end of each string EXCEPT the last one
-	echo -n ",["
+    echo -n ",["
 
-	#Make as many of these lines as you want
+    #Make as many of these lines as you want
     echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$datesec\"}," 
     echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$datesec\"}," 
     echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$datesec\"}" 

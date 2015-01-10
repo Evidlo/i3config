@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 # shell script: periodically polls system for stats
-interface="wlp3s0"
 
+
+#Get the current interface
+interface=`ip route get 1.1.1.1|cut -d ' ' -f 5|head -n 1`
 bandwidth="NC"
 netbytes_down_last=0
 netbytes_up_last=0
-lastrun=0
 echo '{ "version": 1 }'
 echo '['
 echo '[]'
@@ -15,25 +16,25 @@ do
 
 	###Run these all on a 30 second interval	
 	let "lastrun+=1"
-	if [ "$lastrun" -ge 30 ]
-	then
-	lastrun=0
-			
-		###TOTAL BANDWIDTH TRANSFER
-		stats_page=$(curl -s https://my.resnet.purdue.edu/mystats)
-		bandwidth_down=$(echo $stats_page|sed -r "s/.*Downloaded\s([0-9]+\.?[0-9]*).*/\1/")
-		bandwidth_up=$(echo $stats_page|sed -r "s/.*Uploaded\s([0-9]+\.?[0-9]*).*/\1/")
-		if [ -n "$bandwidth_up" -a -n "$bandwidth_down" ]
-			then
-				bandwidth="$(echo "$bandwidth_down+$bandwidth_up"|bc)GB"
-			else
-			bandwidth="NC"
-		fi
+  if [ $lastrun -ge 30 ]
+  then
+			lastrun=0
+      
+    ###TOTAL BANDWIDTH TRANSFER
+		#stats_page=$(curl -s https://my.resnet.purdue.edu/mystats)
+		#bandwidth_down=$(echo $stats_page|sed -r "s/.*Downloaded\s([0-9]+\.?[0-9]*).*/\1/")
+		#bandwidth_up=$(echo $stats_page|sed -r "s/.*Uploaded\s([0-9]+\.?[0-9]*).*/\1/")
+		#if [ -n "$bandwidth_up" -a -n "$bandwidth_down" ]
+		#	then
+		#		bandwidth="$(echo "$bandwidth_down+$bandwidth_up"|bc)GB"
+		#	else
+		#	bandwidth="NC"
+		#fi
 
 		###IP ADDRESS
 		ip_addr=$(ip addr show $interface|grep -Poe "(?<=inet )\d+\.\d+\.\d+\.\d+")
 
-		###BATTERY STATS
+    ###BATTERY STATS
 		if [ ! -z "$(acpi|grep Charging)" ]
 		then
 			battery="$(acpi|awk '{print $4}'|sed -r 's/(.*)\,/\1/')"	
@@ -42,13 +43,13 @@ do
 			battery=$(acpi|awk '{print $5}')
 			battery_charge=$(acpi|awk '{print $4}'|grep -Poe "[0-9]*") 
 		
-			if [ "$battery_charge" -ge 75 ]
+			if [ $battery_charge -ge 75 ]
 			then
 				battery_color="#b7ff00"
-			elif [ "$battery_charge" -ge 50 ]
+			elif [ $battery_charge -ge 50 ]
 			then
 				battery_color="#D1D100"
-			elif [ "$battery_charge" -ge 25 ]
+			elif [ $battery_charge -ge 25 ]
 			then
 				battery_color="#E89300"
 			else
@@ -56,40 +57,40 @@ do
 			fi
 		fi
 	fi
-		
-		###NETWORK TRANSFER SPEED
+    
+    ###NETWORK TRANSFER SPEED
 
-		time_now=$(date +%s%N)
-		netraw=$(cat /proc/net/dev|grep $interface)
-		netbytes_down_now=$(echo $netraw|awk '{print $2}')
-		netbytes_up_now=$(echo $netraw|awk '{print $10}')
-		netspeed_down=$(echo "scale=4;(($netbytes_down_now-$netbytes_down_last)/1000)/(($time_now-$time_last)/1000000000)"|bc|awk '$1<1{print 0}$1>=1{print $1}'|sed -r "s/([0-9]+)\.?[0-9]*/\1/")"KB"
-		netspeed_up=$(echo "scale=4;(($netbytes_up_now-$netbytes_up_last)/1000)/(($time_now-$time_last)/1000000000)"|bc|awk '$1<1{print 0}$1>=1{print $1}'|sed -r "s/([0-9]+)\.?[0-9]*/\1/")"KB"
-		
-		time_last=$time_now
-		netbytes_down_last=$netbytes_down_now
-		netbytes_up_last=$netbytes_up_now
+    time_now=$(date +%s%N)
+    netraw=$(cat /proc/net/dev|grep $interface)
+    netbytes_down_now=$(echo $netraw|awk '{print $2}')
+    netbytes_up_now=$(echo $netraw|awk '{print $10}')
+    netspeed_down=$(echo "scale=4;(($netbytes_down_now-$netbytes_down_last)/1000)/(($time_now-$time_last)/1000000000)"|bc|awk '$1<1{print 0}$1>=1{print $1}'|sed -r "s/([0-9]+)\.?[0-9]*/\1/")"KB"
+    netspeed_up=$(echo "scale=4;(($netbytes_up_now-$netbytes_up_last)/1000)/(($time_now-$time_last)/1000000000)"|bc|awk '$1<1{print 0}$1>=1{print $1}'|sed -r "s/([0-9]+)\.?[0-9]*/\1/")"KB"
+    
+    time_last=$time_now
+    netbytes_down_last=$netbytes_down_now
+    netbytes_up_last=$netbytes_up_now
 
 
 	###DATETIME
-		datetime="$(date "+%k:%M"|grep -Poe "\S*")"
-		###CPU TEMP
-		cputemp=$(acpi -t|awk '{print $4$6}')
+    datetime="$(date "+%k:%M"|grep -Poe "\S*")"
+    ###CPU TEMP
+    cputemp=$(acpi -t|awk '{print $4$6}')
 
 
-		###Send out to status bar
-		echo -n ",["
-		echo -n "{\"name\":\"time\",\"color\":\"#ffff00\",\"full_text\":\"$ip_addr\"},"
-		echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$bandwidth\"},"
-		echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$netspeed_down\"},"
-		echo -n "{\"name\":\"time\",\"color\":\"#ff9200\",\"full_text\":\"$netspeed_up\"},"
-		echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$datetime\"},"
-		echo -n "{\"name\":\"time\",\"color\":\"$battery_color\",\"full_text\":\"$battery\"},"
-		echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$cputemp\"}"
+    ###Send out to status bar
+    echo -n ",["
+    echo -n "{\"name\":\"time\",\"color\":\"#ffff00\",\"full_text\":\"$ip_addr\"},"
+    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$bandwidth\"},"
+    echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$netspeed_down\"},"
+    echo -n "{\"name\":\"time\",\"color\":\"#ff9200\",\"full_text\":\"$netspeed_up\"},"
+    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$datetime\"},"
+    echo -n "{\"name\":\"time\",\"color\":\"$battery_color\",\"full_text\":\"$battery\"},"
+    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$cputemp\"}"
 
-		echo -n "]"
+    echo -n "]"
 
-		sleep 1
+    sleep 1
 
 done
 

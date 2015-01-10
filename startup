@@ -1,0 +1,8 @@
+kb_mouse
+lid_open
+webcam &
+syndaemon -i 2.0 -K -R&
+nm-applet &
+jupiter &
+pulseaudio --start &
+yum makecache
