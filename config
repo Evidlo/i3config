@@ -1,10 +1,5 @@
-#
-# Should you change your keyboard layout somewhen, delete
-# this file and re-run i3-config-wizard(1).
-#
-
-# i3 config file (v4)
-#
+### i3 config
+# Evan Widloski - 2015-08-21 
 # Please see http://i3wm.org/docs/userguide.html for a complete reference!
 
 ## set Modifier keys
@@ -15,9 +10,6 @@ set $mod_b Mod1
 set $font Terminus
 font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
 font pango:$font 10
-
-
-
 
 ## Dmenu
 bindsym $mod+d exec dmenu_run -b
