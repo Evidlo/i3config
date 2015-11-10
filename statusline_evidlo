@@ -3,14 +3,17 @@
 
 
 ###ACTIVE INTERFACE
-interface=`ip route get 1.1.1.1|cut -d ' ' -f 5|head -n 1`
-bandwidth="NC"
+interface=$(ip route get 1.1.1.1|cut -d ' ' -f 5|head -n 1)
+bandwidth=NC
 netbytes_down_last=0
 netbytes_up_last=0
 time_last=0
 echo '{ "version": 1 }'
 echo '['
 echo '[]'
+
+#run the 30 sec commands immediately
+let 'lastrun=30'
 
 while :
 do
@@ -33,23 +36,25 @@ do
         #fi
 
         ###ACTIVE INTERFACE
-        interface=`ip route get 1.1.1.1|cut -d ' ' -f 5|head -n 1`
-
+        interface=$(ip route|awk '/default/{print $5;exit}')
         ###IP ADDRESS
-        ip_addr=$(ip addr show $interface|grep -Poe "(?<=inet )\d+\.\d+\.\d+\.\d+")
+        if [[ $interface ]]
+        then
+            ip_addr=$(ip addr show $interface|awk '/inet/{print $2;exit}')
+        fi
 
         ###BATTERY STATS
         if [ ! -z "$(acpi|grep Charging)" ]
         then
-            battery="$(acpi|awk '{print $4}'|sed -r 's/(.*)\,/\1/')"	
+            battery=$(acpi|awk '{print $4}'|sed -r 's/(.*)\,/\1/')
             battery_color="#FF00CC"
         else
             battery=$(acpi|awk '{print $5}')
-            battery_charge=$(acpi|awk '{print $4}'|grep -Poe "[0-9]*") 
+            battery_charge=$(acpi|awk '{gsub(/%,/,"");print $4}')
 
             if [ $battery_charge -ge 75 ]
             then
-                battery_color="#b7ff00"
+                battery_color="#B7FF00"
             elif [ $battery_charge -ge 50 ]
             then
                 battery_color="#D1D100"
@@ -62,17 +67,15 @@ do
         fi
 
         ###MINUTES USED TODAY
-        mins_used=`minutes_today.py ~/logs/usage.log`
+        mins_used=$(minutes_today.py ~/logs/usage.log)
 
         ###XFINITY TRIAL EXPIRATION TIME
-        if [[ `iwgetid -r` == 'xfinitywifi' ]]
+        if [[ $(iwgetid -r) == 'xfinitywifi' ]]
         then
-            xfin=`cat /tmp/xfin`
+            xfin=$(cat /tmp/xfin)
         else
             unset xfin
         fi
-
-
     fi
 
     ###Run these every second
@@ -80,33 +83,31 @@ do
     ###NETWORK TRANSFER SPEED
     time_now=$(date +%s%N)
 
-    netraw=$(cat /proc/net/dev|grep $interface)
-    netbytes_down_now=$(echo $netraw|awk '{print $2}')
-    netbytes_up_now=$(echo $netraw|awk '{print $10}')
-    netspeed_down=$(echo "scale=4;(($netbytes_down_now-$netbytes_down_last)/1000)/(($time_now-$time_last)/1000000000)"|bc|awk '$1<1{print 0}$1>=1{print $1}'|sed -r "s/([0-9]+)\.?[0-9]*/\1/")"KB"
-    netspeed_up=$(echo "scale=4;(($netbytes_up_now-$netbytes_up_last)/1000)/(($time_now-$time_last)/1000000000)"|bc|awk '$1<1{print 0}$1>=1{print $1}'|sed -r "s/([0-9]+)\.?[0-9]*/\1/")"KB"
+    netbytes_down_now=$(awk "/$interface/"'{print $2}' < /proc/net/dev)
+    netbytes_up_now=$(awk "/$interface/"'{print $10}' < /proc/net/dev)
+    netspeed_down=$(bc <<< "scale=0;(($netbytes_down_now-$netbytes_down_last)/1000)/(($time_now-$time_last)/1000000000)")KB
+    netspeed_up=$(bc <<< "scale=0;(($netbytes_up_now-$netbytes_up_last)/1000)/(($time_now-$time_last)/1000000000)")KB
 
     time_last=$time_now
     netbytes_down_last=$netbytes_down_now
     netbytes_up_last=$netbytes_up_now
 
     ###DATETIME
-    datetime="$(date "+%k:%M"|grep -Poe "\S*")"
+    datetime=$(date "+%k:%M")
 
     ###CPU TEMP
     cputemp=$(acpi -t|awk '{print $4$6}')
 
-
     ###Send out to status bar
     echo -n ",["
-    echo -n "{\"name\":\"time\",\"color\":\"#ffff00\",\"full_text\":\"$ip_addr\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$xfin\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$mins_used\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"#4284D3\",\"full_text\":\"$netspeed_down\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"#ff9200\",\"full_text\":\"$netspeed_up\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$datetime\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"$battery_color\",\"full_text\":\"$battery\"},"
-    echo -n "{\"name\":\"time\",\"color\":\"#ffffff\",\"full_text\":\"$cputemp\"}"
+    printf "{\"name\":\"\",\"color\":\"#ffff00\",\"full_text\":\"%s\"},"   "$ip_addr"
+    printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"},"   "$xfin"
+    printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"},"   "$mins_used"
+    printf "{\"name\":\"\",\"color\":\"#4284D3\",\"full_text\":\"%s\"},"   "$netspeed_down"
+    printf "{\"name\":\"\",\"color\":\"#ff9200\",\"full_text\":\"%s\"},"   "$netspeed_up"
+    printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"},"   "$datetime"
+    printf "{\"name\":\"\",\"color\":\"%s\",\"full_text\":\"%s\"},"        "$battery_color" "$battery"
+    printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"}"    "$cputemp"
 
     echo -n "]"
 
