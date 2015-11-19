@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # shell script: periodically polls system for stats
 
 
