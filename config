@@ -81,7 +81,7 @@ bindsym $mod+$mod_b+0 move container to workspace 10
 bindsym $mod+t restart
 
 ## Exit i3
-bindsym $mod+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+bindsym $mod+$mod_b+e exec "i3-msg exit"
 
 ## Resizing windows
 mode "resize" {
@@ -164,9 +164,10 @@ bar {
 }
 
 ## Assign Windows and workspaces
-workspace 1 output LVDS1
-workspace 2 output LVDS1
-workspace 3 output VGA1
+workspace 1 output DVI-0
+workspace 2 output DVI-0
+workspace 3 output DVI-0
+workspace 4 output VGA-0
 for_window [title=".*Shutter.*"] floating enable
 
 ## Begin startup script
