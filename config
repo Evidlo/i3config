@@ -114,7 +114,7 @@ bindsym $mod+r mode "resize"
 
 
 ## Custom keyboard shortcuts
-bindsym $mod+apostrophe exec urxvt
+bindsym $mod+apostrophe exec urxvt256c
 bindsym XF86AudioRaiseVolume exec "volume_ctl up"
 bindsym XF86AudioLowerVolume exec "volume_ctl down"
 bindsym XF86Launch1 exec "amixer set Capture toggle"
