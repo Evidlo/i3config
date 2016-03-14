@@ -9,7 +9,7 @@ set $mod_b Mod1
 ## Set font
 set $font Terminus
 font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
-font pango:$font 10
+font pango:$font 12
 
 ## Dmenu
 bindsym $mod+d exec dmenu_run -b
@@ -114,7 +114,7 @@ bindsym $mod+r mode "resize"
 
 
 ## Custom keyboard shortcuts
-bindsym $mod+apostrophe exec urxvt
+bindsym $mod+apostrophe exec urxvt256c
 bindsym XF86AudioRaiseVolume exec "volume_ctl up"
 bindsym XF86AudioLowerVolume exec "volume_ctl down"
 bindsym XF86Launch1 exec "amixer set Capture toggle"
@@ -148,7 +148,7 @@ client.urgent           $orange $orange $black
 ## Statusbar
 bar {
     position top
-	font pango:$font 10
+	font pango:$font 12
     status_command ~/.i3/i3_custom_status
     colors {
         background $black
@@ -169,6 +169,7 @@ workspace 2 output DVI-0
 workspace 3 output DVI-0
 workspace 4 output VGA-0
 for_window [title=".*Shutter.*"] floating enable
+assign [class="Octave"] 5
 
 ## Begin startup script
 exec ~/.i3/startup
