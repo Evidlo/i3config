@@ -105,7 +105,7 @@ do
     datetime=$(date "+%k:%M")
 
     ###CPU TEMP
-    cputemp=$(acpi -t|cut -d ' ' -f 4,6)
+    cputemp=$(acpi -t|awk '{print $4$6}')
 
 
     ###Send out to status bar
