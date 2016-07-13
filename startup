@@ -1,6 +1,7 @@
 kb_mouse
 lid_open
 webcam &
+redshift &
 syndaemon -i 2.0 -K -R&
 nm-applet &
 jupiter &
