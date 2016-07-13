@@ -36,7 +36,7 @@ do
         #fi
 
         ###ACTIVE INTERFACE
-        interface=$(ip route|awk '/default/{print $5;exit}')
+        interface=$(ip route|awk '/default/{print $5}')
         ###IP ADDRESS
         if [[ $interface ]]
         then
@@ -44,21 +44,23 @@ do
         fi
 
         ###BATTERY STATS
-        if [ ! -z "$(acpi|grep Charging)" ]
+        acpi_status=$(acpi)
+        if [[ $acpi_status == *"Charging"* ]]
         then
-            battery=$(acpi|awk '{print $4}'|sed -r 's/(.*)\,/\1/')
+            battery=$(echo $acpi_status|cut -d , -f 2)
+
             battery_color="#FF00CC"
         else
-            battery=$(acpi|awk '{print $5}')
-            battery_charge=$(acpi|awk '{gsub(/%,/,"");print $4}')
+            battery_time=$(echo $acpi_status|cut -d ' ' -f 5)
+            battery_charge=$(echo $acpi_status|awk '{gsub(/%,/,"");print $4}')
 
-            if [ $battery_charge -ge 75 ]
+            if (( $battery_charge >= 75 ))
             then
                 battery_color="#B7FF00"
-            elif [ $battery_charge -ge 50 ]
+            elif (( $battery_charge >= 50 ))
             then
                 battery_color="#D1D100"
-            elif [ $battery_charge -ge 25 ]
+            elif (( $battery_charge >= 25 ))
             then
                 battery_color="#E89300"
             else
@@ -105,8 +107,9 @@ do
     ###CPU TEMP
     cputemp=$(acpi -t|awk '{print $4$6}')
 
+
     ###Send out to status bar
-    echo -n ",["
+    printf ",["
     printf "{\"name\":\"\",\"color\":\"#ffff00\",\"full_text\":\"%s\"},"   "$ip_addr"
     printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"},"   "$xfin"
     printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"},"   "$mins_used"
@@ -116,7 +119,7 @@ do
     printf "{\"name\":\"\",\"color\":\"%s\",\"full_text\":\"%s\"},"        "$battery_color" "$battery"
     printf "{\"name\":\"\",\"color\":\"#ffffff\",\"full_text\":\"%s\"}"    "$cputemp"
 
-    echo -n "]"
+    printf "]"
 
     sleep 1
 
