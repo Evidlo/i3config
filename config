@@ -138,7 +138,7 @@ for_window [class="^.*"] border pixel 2
 bar {
     position top
 	font pango:$font 12
-    status_command ~/.i3/i3_custom_status
+    status_command ~/.i3/statusline_evidlo
     colors {
         background $black
         statusline $white
@@ -178,4 +178,4 @@ bindsym XF86MonBrightnessDown exec "xbacklight -dec 5"
 bindsym XF86MonBrightnessUp exec "xbacklight -inc 10"
 bindsym $mod+m exec mpv "$(xclip -o)"
 
- 
+bindsym $mod+b exec fart
