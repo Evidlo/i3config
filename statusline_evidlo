@@ -99,6 +99,8 @@ do
     let "timer300+=1"
     if [ $timer300 -ge 300 ]
     then
+        timer300=0
+        
         ### How many minutes I've used the computer today
         mins_used=$(minutes_today.py ~/logs/usage.log)
     fi
