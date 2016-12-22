@@ -153,10 +153,12 @@ bar {
 }
 
 ## Assign Windows and workspaces
-workspace 1 output DVI-0
-workspace 2 output DVI-0
-workspace 3 output DVI-0
-workspace 4 output VGA-0
+set primary LVDS1
+set secondary VGA1
+workspace 1 output $primary
+workspace 2 output $primary
+workspace 3 output $primary
+workspace 4 output $secondary
 for_window [title=".*Shutter.*"] floating enable
 for_window [title=".*Figure.*"] floating enable
 assign [class="Octave"] 5
@@ -177,5 +179,6 @@ bindsym $mod+n exec nautilus
 bindsym XF86MonBrightnessDown exec "xbacklight -dec 5"
 bindsym XF86MonBrightnessUp exec "xbacklight -inc 10"
 bindsym $mod+m exec mpv "$(xclip -o)"
+bindsym $mod+p exec passmenu --type
 
 bindsym $mod+b exec fart

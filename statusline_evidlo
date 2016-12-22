@@ -2,7 +2,7 @@
 # shell script: periodically polls system for stats
 
 ### Active interface
-interface=$(ip route get 1.1.1.1|cut -d ' ' -f 5|head -n 1)
+interface=$(ip route|awk '/default/{print $5;exit}')
 bandwidth=NC
 netbytes_down_last=0
 netbytes_up_last=0
@@ -28,8 +28,8 @@ do
 
         netbytes_down_now=$(awk "/$interface/"'{print $2}' < /proc/net/dev)
         netbytes_up_now=$(awk "/$interface/"'{print $10}' < /proc/net/dev)
-        netspeed_down=$(bc <<< "scale=0;(($netbytes_down_now-$netbytes_down_last)/1000)/(($time_now-$time_last)/1000000000)")KB
-        netspeed_up=$(bc <<< "scale=0;(($netbytes_up_now-$netbytes_up_last)/1000)/(($time_now-$time_last)/1000000000)")KB
+        netspeed_down=$(bc <<< "scale=0;(($netbytes_down_now-$netbytes_down_last)*1000000)/(($time_now-$time_last))")KB
+        netspeed_up=$(bc <<< "scale=0;(($netbytes_up_now-$netbytes_up_last)*1000000)/(($time_now-$time_last))")KB
 
         time_last=$time_now
         netbytes_down_last=$netbytes_down_now
@@ -53,7 +53,7 @@ do
         timer30=0
 
         ### Active interace
-        interface=$(ip route|awk '/default/{print $5}')
+        interface=$(ip route|awk '/default/{print $5;exit}')
         ### IP address
         if [[ $interface ]]
         then
